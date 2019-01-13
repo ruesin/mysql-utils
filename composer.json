@@ -1,0 +1,24 @@
+{
+  "name": "ruesin/mysql-utils",
+  "description": "MySQL utils classes",
+  "keywords": ["utils","mysql"],
+  "homepage": "https://github.com/ruesin",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Ruesin Liu",
+      "email": "ruesin@gmail.com"
+    }
+  ],
+  "require": {
+    "ruesin/config-utils":"dev-master",
+    "ext-json" : "*",
+    "ext-pdo": "*",
+    "catfan/medoo": "^1.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ruesin\\Utils\\MySQL\\":"src/"
+    }
+  }
+}
