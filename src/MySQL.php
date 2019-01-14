@@ -2,9 +2,6 @@
 
 namespace Ruesin\Utils;
 
-
-use Medoo\Medoo;
-
 /**
  * Class MySQL
  *
@@ -64,7 +61,7 @@ class MySQL
             $config['driver'] = 'mysql';
         }
 
-        return new Medoo([
+        return new \Medoo\Medoo([
             'database_type' => $config['driver'],
             'database_name' => $config['database'],
             'server' => $config['host'],

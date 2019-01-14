@@ -1,7 +1,7 @@
 {
-  "name": "ruesin/mysql-utils",
+  "name": "ruesin/mysql",
   "description": "MySQL utils classes",
-  "keywords": ["utils","mysql"],
+  "keywords": ["utils","mysql","medoo"],
   "homepage": "https://github.com/ruesin",
   "license": "Apache-2.0",
   "authors": [
@@ -11,14 +11,12 @@
     }
   ],
   "require": {
-    "ruesin/config-utils":"dev-master",
+    "ruesin/utils":"dev-master",
     "ext-json" : "*",
     "ext-pdo": "*",
     "catfan/medoo": "^1.6"
   },
   "autoload": {
-    "psr-4": {
-      "Ruesin\\Utils\\MySQL\\":"src/"
-    }
+    "files": ["./src/MySQL.php"]
   }
 }
