@@ -68,8 +68,8 @@ class MySQL
             'port' => $config['port'],
             'username' => isset($config['username']) ? $config['username'] : '',
             'password' => isset($config['password']) ? $config['password'] : '',
-            'charset'  => empty($config['charset']) ? 'utf8mb4' : $config['charset'],
-            'prefix'   => isset($config['prefix']) ? $config['prefix'] : '',
+            'charset' => empty($config['charset']) ? 'utf8mb4' : $config['charset'],
+            'prefix' => isset($config['prefix']) ? $config['prefix'] : '',
             'option' => [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 //PDO::ATTR_CASE => PDO::CASE_NATURAL,
@@ -106,14 +106,6 @@ class MySQL
         return md5(json_encode($config));
     }
 
-    public static function close($key = '', $config = [])
-    {
-        $config = self::getConfig($key, $config);
-        $name = self::configToName($config);
-        self::clearInstance($name);
-        return true;
-    }
-
     public static function closeAll()
     {
         foreach (self::$_instance as $name => $val) {
@@ -121,12 +113,18 @@ class MySQL
         }
     }
 
+    public static function close($key = '', $config = [])
+    {
+        return self::clearInstance(self::configToName(self::getConfig($key, $config)));
+    }
+
     private static function clearInstance($name)
     {
-        if (isset(self::$_instance[$name])) {
-            self::$_instance[$name] = null;
-            unset(self::$_instance[$name]);
-        }
+        if (!isset(self::$_instance[$name])) return true;
+
+        self::$_instance[$name] = null;
+        unset(self::$_instance[$name]);
+        return true;
     }
 
     private static function ping($connect)
