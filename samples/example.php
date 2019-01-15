@@ -6,6 +6,8 @@ require_once ROOT_DIR . '/../vendor/autoload.php';
 \Ruesin\Utils\Config::loadPath(ROOT_DIR.'config/');
 
 //从配置项中获取配置文件
+$mysql = \Ruesin\Utils\MySQL::getInstance('');
+$mysql = \Ruesin\Utils\MySQL::getInstance('0');
 $mysql = \Ruesin\Utils\MySQL::getInstance('web.online');
 
 //关闭连接
