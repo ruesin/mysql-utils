@@ -11,10 +11,10 @@
     }
   ],
   "require": {
-    "ruesin/utils":"dev-master",
     "ext-json" : "*",
     "ext-pdo": "*",
-    "catfan/medoo": "^1.6"
+    "catfan/medoo": "^1.6",
+    "ruesin/utils": "^1.0"
   },
   "autoload": {
     "files": ["./src/MySQL.php"]
