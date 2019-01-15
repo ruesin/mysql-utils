@@ -105,6 +105,10 @@ class MySQL
             return $config;
         }
 
+        if ($key) {
+            return Config::get('mysql.'.$key);
+        }
+
         $mysqlConfig = Config::get('mysql', []);
         if (empty($mysqlConfig)) return [];
 
