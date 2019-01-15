@@ -78,34 +78,6 @@ class MySQL
         ]);
     }
 
-    private static function getConfig($key, $config)
-    {
-        if (!$key) {
-            if (!empty($config)) {
-                return $config;
-            }
-        }
-        $mysqlConfig = Config::get('mysql', []);
-        if (empty($mysqlConfig)) return [];
-
-        if (count($mysqlConfig) == count($mysqlConfig, COUNT_RECURSIVE)) {
-            return $mysqlConfig;
-        } else {
-            while (!empty($mysqlConfig)) {
-                $tempConfig = array_shift($mysqlConfig);
-                if (is_array($tempConfig)) {
-                    return $tempConfig;
-                }
-            }
-        }
-        return [];
-    }
-
-    private static function configToName($config)
-    {
-        return md5(json_encode($config));
-    }
-
     public static function closeAll()
     {
         foreach (self::$_instance as $name => $val) {
@@ -125,6 +97,37 @@ class MySQL
         self::$_instance[$name] = null;
         unset(self::$_instance[$name]);
         return true;
+    }
+
+    private static function getConfig($key, $config)
+    {
+        if (!empty($config)) {
+            return $config;
+        }
+
+        $mysqlConfig = Config::get('mysql', []);
+        if (empty($mysqlConfig)) return [];
+
+        if (array_key_exists($key, $mysqlConfig)) {
+            return $mysqlConfig[$key];
+        }
+
+        if (count($mysqlConfig) == count($mysqlConfig, COUNT_RECURSIVE)) {
+            return $mysqlConfig;
+        }
+
+        while (!empty($mysqlConfig)) {
+            $tempConfig = array_shift($mysqlConfig);
+            if (is_array($tempConfig)) {
+                return $tempConfig;
+            }
+        }
+        return [];
+    }
+
+    private static function configToName($config)
+    {
+        return md5(json_encode($config));
     }
 
     private static function ping($connect)
