@@ -13,8 +13,20 @@ class MySQL
 {
     private static $_instance = [];
 
-    private function __construct()
+    /**
+     * @var \Medoo\Medoo
+     */
+    private $connection = null;
+
+    /**
+     * @var array
+     */
+    private $config = [];
+
+    private function __construct($config)
     {
+        $this->connection = $this->connect($config);
+        $this->config = $config;
     }
 
     private function __clone()
@@ -30,11 +42,11 @@ class MySQL
         $name = self::configToName($config);
         try {
             if (empty(self::$_instance[$name])) {
-                self::$_instance[$name] = self::connect($config);
+                self::$_instance[$name] = new self($config);
             } else {
                 if (self::ping(self::$_instance[$name]) !== true) {
                     self::clearInstance($name);
-                    self::$_instance[$name] = self::connect($config);
+                    self::$_instance[$name] = new self($config);
                 }
             }
         } catch (\Exception $e) {
@@ -93,7 +105,6 @@ class MySQL
     private static function clearInstance($name)
     {
         if (!isset(self::$_instance[$name])) return true;
-
         self::$_instance[$name] = null;
         unset(self::$_instance[$name]);
         return true;
@@ -106,7 +117,7 @@ class MySQL
         }
 
         if ($key) {
-            return Config::get('mysql.'.$key);
+            return Config::get('mysql.' . $key);
         }
 
         $mysqlConfig = Config::get('mysql', []);
@@ -134,17 +145,28 @@ class MySQL
         return md5(json_encode($config));
     }
 
-    private static function ping($connect)
+    private static function ping(self $instance)
     {
-        /*
-        try{
-            $connect->pdo->getAttribute(\PDO::ATTR_SERVER_INFO);
+        /*try{
+            $instance->connection->pdo->getAttribute(\PDO::ATTR_SERVER_INFO);
         } catch (\Exception $e) {
             if(strpos($e->getMessage(), 'MySQL server has gone away')!==false){
                 return false;
             }
-        }
-        */
+        }*/
         return true;
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (empty($this->connection) || !$this->connection instanceof \Medoo\Medoo) {
+            return false;
+        }
+
+        if (!method_exists($this->connection, $name)) {
+            return false;
+        }
+
+        return call_user_func_array([$this->connection, $name], $arguments);
     }
 }
