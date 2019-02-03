@@ -34,7 +34,7 @@ class MySQL
     }
 
     /**
-     * @return \Medoo\Medoo | bool
+     * @return \Medoo\Medoo | bool | self
      */
     public static function getInstance($key = '', $config = [])
     {
@@ -50,6 +50,7 @@ class MySQL
                 }
             }
         } catch (\Exception $e) {
+            error_log(date('[Y-m-d H:i:s] ') . $e->getMessage() . PHP_EOL);
             return false;
         }
         return self::$_instance[$name];
@@ -167,6 +168,18 @@ class MySQL
             return false;
         }
 
-        return call_user_func_array([$this->connection, $name], $arguments);
+        try {
+            return call_user_func_array([$this->connection, $name], $arguments);
+        } catch (\PDOException $e) {
+            $error = $e->errorInfo;
+            if ($error['1'] == '2006' || strpos($error['2'], 'MySQL server has gone away') !== false
+                || $error['1'] == '1317' || strpos($error['2'], 'Query execution was interrupted') !== false
+            ) {
+                error_log(date('[Y-m-d H:i:s] ') . $e->getMessage() . ' . ' . $this->connection->last() . PHP_EOL);
+                $this->connection = self::connect($this->config);
+                return call_user_func_array([$this->connection, $name], $arguments);
+            }
+            throw $e;
+        }
     }
 }
