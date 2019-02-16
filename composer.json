@@ -17,6 +17,8 @@
     "ruesin/utils": "^1.0"
   },
   "autoload": {
-    "files": ["./src/MySQL.php"]
+    "psr-4": {
+      "Ruesin\\Utils\\":"src/"
+    }
   }
 }
