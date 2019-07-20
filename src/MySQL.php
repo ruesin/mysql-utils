@@ -39,12 +39,7 @@ class MySQL
      */
     public static function getInstance($name)
     {
-        if (empty(self::$_instance[$name])
-            || self::ping(self::$_instance[$name]) !== true) {
-            self::clearInstance($name);
-            self::$_instance[$name] = new self($name);
-        }
-        return self::$_instance[$name];
+        return self::$_instance[$name] = self::$_instance[$name] ?? new self($name);
     }
 
     /**
@@ -99,7 +94,7 @@ class MySQL
     public static function clear()
     {
         foreach (self::$_instance as $name => $val) {
-            self::clearInstance($name);
+            self::close($name);
         }
     }
 
@@ -108,18 +103,6 @@ class MySQL
         if (!isset(self::$_instance[$name])) return true;
         self::$_instance[$name] = null;
         unset(self::$_instance[$name]);
-        return true;
-    }
-
-    private static function ping($instance)
-    {
-        /*try{
-            $instance->connection->pdo->getAttribute(\PDO::ATTR_SERVER_INFO);
-        } catch (\Exception $e) {
-            if(strpos($e->getMessage(), 'MySQL server has gone away')!==false){
-                return false;
-            }
-        }*/
         return true;
     }
 
