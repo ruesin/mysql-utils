@@ -3,7 +3,6 @@
 
 ## 依赖
 - [catfan/medoo](https://github.com/catfan/Medoo)
-- [ruesin/utils](https://github.com/ruesin/utils)
 
 ## 使用
 使用`\Ruesin\Utils\MySQL::getInstance($key,$config)`获取`\Medoo\Medoo`实例。
