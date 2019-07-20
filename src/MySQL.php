@@ -22,7 +22,7 @@ class MySQL
      * All instance
      * @var array
      */
-    private static $_instance = [];
+    private static $instances = [];
 
     /**
      * @var \Medoo\Medoo
@@ -58,7 +58,10 @@ class MySQL
      */
     public static function getInstance($name)
     {
-        return self::$_instance[$name] = self::$_instance[$name] ?? new self($name);
+        if (!isset(self::$instances[$name]) || !self::$instances[$name]) {
+            self::$instances[$name] = new self($name);
+        }
+        return self::$instances[$name];
     }
 
     /**
@@ -95,7 +98,7 @@ class MySQL
      * @param array $config
      * @param bool $rewrite
      */
-    public static function setConfig(string $name, array $config, $rewrite = true)
+    public static function setConfig($name, array $config, $rewrite = true)
     {
         if (array_key_exists($name, self::$configs) && $rewrite !== true) return;
         self::$configs[$name] = $config;
@@ -112,16 +115,16 @@ class MySQL
 
     public static function clear()
     {
-        foreach (self::$_instance as $name => $instance) {
+        foreach (self::$instances as $name => $instance) {
             self::close($name);
         }
     }
 
-    public static function close(string $name)
+    public static function close($name)
     {
-        if (!isset(self::$_instance[$name])) return true;
-        self::$_instance[$name] = null;
-        unset(self::$_instance[$name]);
+        if (!isset(self::$instances[$name])) return true;
+        self::$instances[$name] = null;
+        unset(self::$instances[$name]);
         return true;
     }
 
