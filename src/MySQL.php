@@ -11,6 +11,17 @@ namespace Ruesin\Utils;
  */
 class MySQL
 {
+    /**
+     * All Configs
+     *
+     * @var array
+     */
+    private static $configs = [];
+
+    /**
+     * All instance
+     * @var array
+     */
     private static $_instance = [];
 
     /**
@@ -18,15 +29,23 @@ class MySQL
      */
     private $connection = null;
 
-    private static $config = [];
+    /**
+     * Connection name
+     * @var null
+     */
+    private $name = null;
 
-    private $key = null;
+    /**
+     * Connection config
+     * @var array
+     */
+    private $config = [];
 
     private function __construct($name)
     {
-        $config = self::getConfig($name);
-        $this->connection = $this->connect($config);
-        $this->key = $name;
+        $this->name = $name;
+        $this->config = self::getConfig($this->name);
+        $this->connection = $this->connect($this->config);
     }
 
     private function __clone()
@@ -72,14 +91,14 @@ class MySQL
     }
 
     /**
-     * @param string $key
+     * @param string $name
      * @param array $config
      * @param bool $rewrite
      */
-    public static function setConfig(string $key, array $config, $rewrite = true)
+    public static function setConfig(string $name, array $config, $rewrite = true)
     {
-        if (array_key_exists($key, self::$config) && $rewrite !== true) return;
-        self::$config[$key] = $config;
+        if (array_key_exists($name, self::$configs) && $rewrite !== true) return;
+        self::$configs[$name] = $config;
     }
 
     /**
@@ -88,12 +107,12 @@ class MySQL
      */
     public static function getConfig($key)
     {
-        return array_key_exists($key, self::$config) ? self::$config[$key] : [];
+        return array_key_exists($key, self::$configs) ? self::$configs[$key] : [];
     }
 
     public static function clear()
     {
-        foreach (self::$_instance as $name => $val) {
+        foreach (self::$_instance as $name => $instance) {
             self::close($name);
         }
     }
@@ -125,7 +144,7 @@ class MySQL
                 || $error['1'] == '1317' || strpos($error['2'], 'Query execution was interrupted') !== false
             ) {
                 error_log(date('[Y-m-d H:i:s] ') . $e->getMessage() . ' . ' . $this->connection->last() . PHP_EOL);
-                $this->connection = self::connect($this->config);
+                $this->connection = $this->connect($this->config);
                 return call_user_func_array([$this->connection, $name], $arguments);
             }
             throw $e;
