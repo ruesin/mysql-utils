@@ -6,32 +6,33 @@ return [
         'database'  => 'blog',
         'username'  => 'root',
         'password'  => 'root',
-        'port'      => '3306'
+        'port'      => '3306',
+        'retry_exception' => [
+            // 'MySQL server has gone away'
+        ]
     ],
     'web' => [
-        'online' => [
-            'driver'    => 'mysql',
-            'host'      => '127.0.0.1',
-            'database'  => 'web',
-            'username'  => 'web',
-            'password'  => 'web',
-            'port'      => '3306'
-        ],
+        'driver'    => 'mysql',
+        'host'      => '127.0.0.1',
+        'database'  => 'web',
+        'username'  => 'root',
+        'password'  => 'root',
+        'port'      => '3306'
     ],
     '' => [
         'driver'    => 'mysql',
         'host'      => '127.0.0.1',
         'database'  => 'blog',
-        'username'  => 'null_user',
-        'password'  => 'null_pass',
+        'username'  => 'root',
+        'password'  => 'root',
         'port'      => '3306'
     ],
     '0' => [
         'driver'    => 'mysql',
         'host'      => '127.0.0.1',
         'database'  => 'blog',
-        'username'  => '0_user',
-        'password'  => '0_pass',
+        'username'  => 'root',
+        'password'  => 'root',
         'port'      => '3306'
     ]
 ];

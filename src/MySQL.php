@@ -138,16 +138,26 @@ class MySQL
         try {
             return call_user_func_array([$this->connection, $name], $arguments);
         } catch (\PDOException $e) {
-            //TODO inject
-            $error = $e->errorInfo;
-            if ($error['1'] == '2006' || strpos($error['2'], 'MySQL server has gone away') !== false
-                || $error['1'] == '1317' || strpos($error['2'], 'Query execution was interrupted') !== false
-            ) {
-                error_log(date('[Y-m-d H:i:s] ') . $e->getMessage() . ' . ' . $this->connection->last() . PHP_EOL);
-                $this->connection = $this->connect($this->config);
-                return call_user_func_array([$this->connection, $name], $arguments);
-            }
-            throw $e;
+            //https://www.php.net/manual/zh/pdostatement.errorinfo.php
+            return call_user_func_array([$this->exception($e->errorInfo['2'], $e), $name], $arguments);
+        } catch (\Exception $e) {
+            return call_user_func_array([$this->exception($e->getMessage(), $e), $name], $arguments);
         }
+    }
+
+    private function exception($message, $e)
+    {
+        if (!isset($this->config['retry_exception']) || !is_array($this->config['retry_exception']))
+            throw $e;
+
+        foreach ($this->config['retry_exception'] as $exception) {
+            if (strpos($message, $exception) === false)
+                continue;
+
+            $this->connection = $this->connect($this->config);
+            return $this->connection;
+        }
+
+        throw $e;
     }
 }
