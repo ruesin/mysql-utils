@@ -22,10 +22,11 @@ class MySQL
 
     private $key = null;
 
-    private function __construct($key, $config)
+    private function __construct($name)
     {
+        $config = self::getConfig($name);
         $this->connection = $this->connect($config);
-        $this->key = $key;
+        $this->key = $name;
     }
 
     private function __clone()
@@ -33,35 +34,30 @@ class MySQL
     }
 
     /**
-     * @return \Medoo\Medoo | bool | self
+     * @param $name
+     * @return \Medoo\Medoo
      */
     public static function getInstance($name)
     {
-        $config = self::getConfig($name);
         if (empty(self::$_instance[$name])
             || self::ping(self::$_instance[$name]) !== true) {
             self::clearInstance($name);
-            self::$_instance[$name] = new self($name, $config);
+            self::$_instance[$name] = new self($name);
         }
         return self::$_instance[$name];
     }
 
-    private static function connect($config)
+    /**
+     * @param array $config
+     * @return \Medoo\Medoo
+     * @throws \Exception
+     */
+    private function connect(array $config)
     {
-        if (!isset($config['host']) || !$config['host']) {
-            throw new \Exception('Has not host!');
-        }
-
-        if (!isset($config['database']) || !$config['database']) {
-            throw new \Exception('Has not database!');
-        }
-
-        if (!isset($config['port']) || !$config['port']) {
-            $config['port'] = 3306;
-        }
-
-        if (!isset($config['driver'])) {
-            $config['driver'] = 'mysql';
+        foreach (['host', 'port', 'database', 'driver'] as $item) {
+            if (!isset($config[$item]) || !$config[$item]) {
+                throw new \Exception('Missing ' . $item . ' configuration item!');
+            }
         }
 
         return new \Medoo\Medoo([
@@ -95,24 +91,19 @@ class MySQL
      * @param $key
      * @return array
      */
-    private static function getConfig($key)
+    public static function getConfig($key)
     {
         return array_key_exists($key, self::$config) ? self::$config[$key] : [];
     }
 
-    public static function closeAll()
+    public static function clear()
     {
         foreach (self::$_instance as $name => $val) {
             self::clearInstance($name);
         }
     }
 
-    public static function close(string $key)
-    {
-        return self::clearInstance($key);
-    }
-
-    private static function clearInstance($name)
+    public static function close(string $name)
     {
         if (!isset(self::$_instance[$name])) return true;
         self::$_instance[$name] = null;
