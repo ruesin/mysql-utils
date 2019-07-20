@@ -18,15 +18,14 @@ class MySQL
      */
     private $connection = null;
 
-    /**
-     * @var array
-     */
-    private $config = [];
+    private static $config = [];
 
-    private function __construct($config)
+    private $key = null;
+
+    private function __construct($key, $config)
     {
         $this->connection = $this->connect($config);
-        $this->config = $config;
+        $this->key = $key;
     }
 
     private function __clone()
@@ -36,22 +35,13 @@ class MySQL
     /**
      * @return \Medoo\Medoo | bool | self
      */
-    public static function getInstance($key = '', $config = [])
+    public static function getInstance($name)
     {
-        $config = self::getConfig($key, $config);
-        $name = self::configToName($config);
-        try {
-            if (empty(self::$_instance[$name])) {
-                self::$_instance[$name] = new self($config);
-            } else {
-                if (self::ping(self::$_instance[$name]) !== true) {
-                    self::clearInstance($name);
-                    self::$_instance[$name] = new self($config);
-                }
-            }
-        } catch (\Exception $e) {
-            error_log(date('[Y-m-d H:i:s] ') . $e->getMessage() . PHP_EOL);
-            return false;
+        $config = self::getConfig($name);
+        if (empty(self::$_instance[$name])
+            || self::ping(self::$_instance[$name]) !== true) {
+            self::clearInstance($name);
+            self::$_instance[$name] = new self($name, $config);
         }
         return self::$_instance[$name];
     }
@@ -85,10 +75,29 @@ class MySQL
             'prefix' => isset($config['prefix']) ? $config['prefix'] : '',
             'option' => [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                //PDO::ATTR_CASE => PDO::CASE_NATURAL,
-                //PDO::ATTR_PERSISTENT => true //持久化连接
+                \PDO::ATTR_CASE => \PDO::CASE_NATURAL
             ]
         ]);
+    }
+
+    /**
+     * @param string $key
+     * @param array $config
+     * @param bool $rewrite
+     */
+    public static function setConfig(string $key, array $config, $rewrite = true)
+    {
+        if (array_key_exists($key, self::$config) && $rewrite !== true) return;
+        self::$config[$key] = $config;
+    }
+
+    /**
+     * @param $key
+     * @return array
+     */
+    private static function getConfig($key)
+    {
+        return array_key_exists($key, self::$config) ? self::$config[$key] : [];
     }
 
     public static function closeAll()
@@ -98,9 +107,9 @@ class MySQL
         }
     }
 
-    public static function close($key = '', $config = [])
+    public static function close(string $key)
     {
-        return self::clearInstance(self::configToName(self::getConfig($key, $config)));
+        return self::clearInstance($key);
     }
 
     private static function clearInstance($name)
@@ -111,42 +120,7 @@ class MySQL
         return true;
     }
 
-    private static function getConfig($key, $config)
-    {
-        if (!empty($config)) {
-            return $config;
-        }
-
-        if ($key) {
-            return Config::get('mysql.' . $key);
-        }
-
-        $mysqlConfig = Config::get('mysql', []);
-        if (empty($mysqlConfig)) return [];
-
-        if (array_key_exists($key, $mysqlConfig)) {
-            return $mysqlConfig[$key];
-        }
-
-        if (count($mysqlConfig) == count($mysqlConfig, COUNT_RECURSIVE)) {
-            return $mysqlConfig;
-        }
-
-        while (!empty($mysqlConfig)) {
-            $tempConfig = array_shift($mysqlConfig);
-            if (is_array($tempConfig)) {
-                return $tempConfig;
-            }
-        }
-        return [];
-    }
-
-    private static function configToName($config)
-    {
-        return md5(json_encode($config));
-    }
-
-    private static function ping(self $instance)
+    private static function ping($instance)
     {
         /*try{
             $instance->connection->pdo->getAttribute(\PDO::ATTR_SERVER_INFO);
@@ -171,6 +145,7 @@ class MySQL
         try {
             return call_user_func_array([$this->connection, $name], $arguments);
         } catch (\PDOException $e) {
+            //TODO inject
             $error = $e->errorInfo;
             if ($error['1'] == '2006' || strpos($error['2'], 'MySQL server has gone away') !== false
                 || $error['1'] == '1317' || strpos($error['2'], 'Query execution was interrupted') !== false
