@@ -43,11 +43,13 @@ class MySQL
 
     /**
      * @param $name
-     * @return mixed | \Medoo\Medoo
+     * @param array $config
+     * @return mixed | PoolFactory | \Medoo\Medoo
      */
-    public static function getInstance($name)
+    public static function getInstance($name, $config = [])
     {
         if (!isset(self::$instances[$name]) || !self::$instances[$name]) {
+            if (!empty($config)) self::setConfig($name, $config);
             self::$instances[$name] = new self($name);
         }
         return self::$instances[$name];
