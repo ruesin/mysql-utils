@@ -40,4 +40,9 @@ class MedooHandler implements ConnectorInterface
     {
         // TODO: Implement reset() method.
     }
+
+    public function ping($connection)
+    {
+        // TODO: Implement ping() method.
+    }
 }

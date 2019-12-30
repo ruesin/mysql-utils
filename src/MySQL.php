@@ -2,6 +2,7 @@
 
 namespace Ruesin\Utils;
 
+use Swover\Pool\ConnectionPool;
 use Swover\Pool\PoolFactory;
 
 /**
@@ -34,7 +35,11 @@ class MySQL
     private function __construct($name)
     {
         $config = self::getConfig($name);
-        $this->pool = new PoolFactory($config, new MedooHandler($config));
+
+        $this->pool = new ConnectionPool(
+            isset($config['pool_config']) ? $config['pool_config'] : [],
+            new MedooHandler($config)
+        );
     }
 
     private function __clone()
@@ -75,6 +80,11 @@ class MySQL
         return array_key_exists($key, self::$configs) ? self::$configs[$key] : [];
     }
 
+    /**
+     * Clear all connector instance
+     * @param null $name
+     * @return bool
+     */
     public static function clear($name = null)
     {
         $instances = $name === null ? self::$instances :
